@@ -25,7 +25,7 @@ def data_dashboardClean(dataClean):
     dataClean = dataClean.loc[5:].reset_index(drop=True)
     dataClean.columns = dataClean.loc[0]
     dataClean = dataClean.loc[1:].reset_index(drop=True)
-    dataClean = dataClean.loc[dataClean.notna().any(axis=1)].round(decimals=4)
+    dataClean = dataClean.loc[dataClean.notna().any(axis=1)].round(decimals=2)
     dataClean = dataClean.drop(dataClean.columns[0], axis=1)
 
     dataClean = dataClean.fillna('-')
@@ -48,27 +48,27 @@ def create_dashboard():
     # Key Metrics Row
     col1, col2 = st.columns(2)
 
-    prev_week_portfolioVal = data['Portfolio_Summary'].iloc[0,0]
-    portfolio_value        = data['Portfolio_Summary'].iloc[0,1]  # From the Excel data
-    prev_weekly_change = data['Portfolio_Summary'].iloc[0, 2]
-    weekly_change          = data['Portfolio_Summary'].iloc[0,3]
-    total_gain_loss        = data['Portfolio_Summary'].iloc[0,4]
+    prev_week_portfolioVal = data['Portfolio_Summary'].iloc[0,0].round(decimals=2)
+    portfolio_value        = data['Portfolio_Summary'].iloc[0,1].round(decimals=2)  # From the Excel data
+    prev_weekly_change = data['Portfolio_Summary'].iloc[0, 2].round(decimals=2)
+    weekly_change          = data['Portfolio_Summary'].iloc[0,3].round(decimals=2)
+    total_gain_loss        = data['Portfolio_Summary'].iloc[0,4].round(decimals=2)
 
 
     with col1:
         st.metric("Portfolio Value",
                   format_currency(portfolio_value),
-        -abs(-prev_week_portfolioVal + portfolio_value) if (-prev_week_portfolioVal + portfolio_value) < 0 else (
-                    -prev_week_portfolioVal + portfolio_value))
+                  (-abs(-prev_week_portfolioVal + portfolio_value)).round(decimals=2) if (-prev_week_portfolioVal + portfolio_value) < 0 else (
+                    -prev_week_portfolioVal + portfolio_value).round(decimals=2))
 
         st.metric("Previous Week Portfolio Value",
                   format_currency(prev_week_portfolioVal))
     with col2:
         st.metric("Total Gain/Loss",
                   format_currency(total_gain_loss),
-                  -abs(total_gain_loss-prev_weekly_change) if (total_gain_loss-prev_weekly_change) < 0 else (total_gain_loss-prev_weekly_change))
+                  (-abs(total_gain_loss-prev_weekly_change)).round(decimals=2) if (total_gain_loss-prev_weekly_change) < 0 else (total_gain_loss-prev_weekly_change).round(decimals=2))
 
-        st.metric("Previous Week Portfolio Value",
+        st.metric("Previous Week Total Gain/Loss",
                   format_currency(prev_weekly_change))
 
 
