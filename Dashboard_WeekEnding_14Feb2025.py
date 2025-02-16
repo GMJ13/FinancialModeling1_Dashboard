@@ -12,7 +12,7 @@ st.set_page_config(page_title="Portfolio Dashboard", layout="wide")
 
 def load_data():
     """Load data from Excel file"""
-    df = pd.read_excel('Group-6 Portfolio Dashboard_Week3_07022025.xlsx',
+    df = pd.read_excel('Group-6 Portfolio Dashboard_Week4_14022025.xlsx',
                        sheet_name=['Dashboard', 'Transactions','Portfolio_Summary'])
     return df
 
