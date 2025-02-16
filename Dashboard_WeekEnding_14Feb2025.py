@@ -72,20 +72,6 @@ def create_dashboard():
         )
         st.plotly_chart(fig_composition)
 
-    # Performance Chart
-    """
-    if 'Charting' in data:
-        charting_df = data['Charting']
-
-        # Create line chart
-        fig_performance = px.line(
-            charting_df,
-            x='Date',
-            y='Portfolio Value',
-            title="Portfolio Performance Over Time"
-        )
-        st.plotly_chart(fig_performance)
-    """
     # Transaction History
     if 'Transactions' in data:
         st.subheader("Recent Transactions")
