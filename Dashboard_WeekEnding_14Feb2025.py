@@ -27,7 +27,7 @@ def data_dashboardClean(dataClean):
     dataClean = dataClean.loc[1:].reset_index(drop=True)
     dataClean = dataClean.loc[dataClean.notna().any(axis=1)].round(decimals=2)
     dataClean = dataClean.drop(dataClean.columns[0], axis=1)
-
+    dataClean['Gain (Loss)'] = dataClean['Gain (Loss)'].apply(lambda x: round(x, 2))
     dataClean = dataClean.fillna('-')
 
     for iterTick in range(1,len(dataClean)):
