@@ -4,6 +4,7 @@ import plotly.express as px
 import plotly.graph_objects as go
 from datetime import datetime
 import numpy as np
+import yfinance as yf
 
 # Set page configuration
 st.set_page_config(page_title="Portfolio Dashboard", layout="wide")
@@ -12,13 +13,28 @@ st.set_page_config(page_title="Portfolio Dashboard", layout="wide")
 def load_data():
     """Load data from Excel file"""
     df = pd.read_excel('Group-6 Portfolio Dashboard_Week3_07022025.xlsx',
-                       sheet_name=['Dashboard', 'Transactions', 'Charting'])
+                       sheet_name=['Dashboard', 'Transactions','Portfolio_Summary'])
     return df
 
 
 def format_currency(value):
     """Format numbers as currency"""
     return f"${value:,.2f}"
+
+def data_dashboardClean(dataClean):
+    dataClean = dataClean.loc[5:].reset_index(drop=True)
+    dataClean.columns = dataClean.loc[0]
+    dataClean = dataClean.loc[1:].reset_index(drop=True)
+    dataClean = dataClean.loc[dataClean.notna().any(axis=1)].round(decimals=4)
+    dataClean = dataClean.drop(dataClean.columns[0], axis=1)
+
+    dataClean = dataClean.fillna('-')
+
+    for iterTick in range(1,len(dataClean)):
+        dataClean['Asset'][iterTick] = yf.Ticker(dataClean['Ticker'][iterTick]).info['longName']
+
+    #dataClean = dataClean.reset_index(range(1,len(dataClean)),drop=True)
+    return dataClean
 
 
 def create_dashboard():
@@ -30,28 +46,41 @@ def create_dashboard():
     st.markdown("---")
 
     # Key Metrics Row
-    col1, col2, col3 = st.columns(3)
+    col1, col2 = st.columns(2)
 
-    portfolio_value = 985158.59  # From the Excel data
-    weekly_change = -13650.98
-    total_gain_loss = -12869.64
+    prev_week_portfolioVal = data['Portfolio_Summary'].iloc[0,0]
+    portfolio_value        = data['Portfolio_Summary'].iloc[0,1]  # From the Excel data
+    prev_weekly_change = data['Portfolio_Summary'].iloc[0, 2]
+    weekly_change          = data['Portfolio_Summary'].iloc[0,3]
+    total_gain_loss        = data['Portfolio_Summary'].iloc[0,4]
+
 
     with col1:
         st.metric("Portfolio Value",
                   format_currency(portfolio_value),
-                  format_currency(weekly_change))
+        -abs(-prev_week_portfolioVal + portfolio_value) if (-prev_week_portfolioVal + portfolio_value) < 0 else (
+                    -prev_week_portfolioVal + portfolio_value))
 
+        st.metric("Previous Week Portfolio Value",
+                  format_currency(prev_week_portfolioVal))
     with col2:
-        st.metric("Weekly Change",
-                  format_currency(weekly_change),
-                  format_currency(weekly_change))
-
-    with col3:
         st.metric("Total Gain/Loss",
                   format_currency(total_gain_loss),
-                  format_currency(total_gain_loss))
+                  -abs(total_gain_loss-prev_weekly_change) if (total_gain_loss-prev_weekly_change) < 0 else (total_gain_loss-prev_weekly_change))
+
+        st.metric("Previous Week Portfolio Value",
+                  format_currency(prev_weekly_change))
+
 
     st.markdown("---")
+
+    data['Dashboard'] = data_dashboardClean(data['Dashboard'])
+
+    # Display Current Holdings
+    st.subheader("Current Holdings Information")
+    st.dataframe(
+        data['Dashboard']
+    )
 
     # Portfolio Composition
     if 'Transactions' in data:
@@ -62,13 +91,13 @@ def create_dashboard():
         transactions_df['Date'] = pd.to_datetime(transactions_df['Date'])
 
         # Group by asset type and calculate total value
-        portfolio_composition = transactions_df.groupby('Asset')['Entry Price'].sum()
+        portfolio_composition = transactions_df.groupby('Sector')['Entry Price'].sum()
 
         # Create pie chart
         fig_composition = px.pie(
             values=portfolio_composition.values,
             names=portfolio_composition.index,
-            title="Portfolio Composition by Asset Type"
+            title="Portfolio Composition by Sector Type"
         )
         st.plotly_chart(fig_composition)
 
@@ -76,9 +105,8 @@ def create_dashboard():
     if 'Transactions' in data:
         st.subheader("Recent Transactions")
         st.dataframe(
-            transactions_df.sort_values('Date', ascending=False)
-            .head(10)
-            [['Date', 'Asset', 'Ticker', 'Units', 'Entry Price']]
+            transactions_df.sort_values('Date', ascending=False).set_index('Date',drop=True)
+            [['Sector', 'Ticker','Transaction Type', 'Units', 'Entry Price','Transaction Amount','Transaction Cost','Total Transaction','Currency']]
         )
 
 
