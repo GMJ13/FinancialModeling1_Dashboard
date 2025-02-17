@@ -52,7 +52,7 @@ def create_dashboard():
     portfolio_value        = data['Portfolio_Summary'].iloc[0,1].round(decimals=2)  # From the Excel data
     prev_weekly_change = data['Portfolio_Summary'].iloc[0, 2].round(decimals=2)
     weekly_change          = data['Portfolio_Summary'].iloc[0,3].round(decimals=2)
-    total_gain_loss        = data['Portfolio_Summary'].iloc[0,4].round(decimals=2)
+    prev_week_PnL        = data['Portfolio_Summary'].iloc[0,4].round(decimals=2)
 
 
     with col1:
@@ -64,12 +64,12 @@ def create_dashboard():
         st.metric("Previous Week Portfolio Value",
                   format_currency(prev_week_portfolioVal))
     with col2:
-        st.metric("Total Gain/Loss",
-                  format_currency(total_gain_loss),
-                  (-abs(total_gain_loss-prev_weekly_change)).round(decimals=2) if (total_gain_loss-prev_weekly_change) < 0 else (total_gain_loss-prev_weekly_change).round(decimals=2))
+        st.metric("Weekly Gain/Loss",
+                  format_currency(weekly_change),
+                  (-abs(weekly_change-prev_week_PnL)).round(decimals=2) if (weekly_change-prev_week_PnL) < 0 else (weekly_change-prev_week_PnL).round(decimals=2))
 
         st.metric("Previous Week Total Gain/Loss",
-                  format_currency(prev_weekly_change))
+                  format_currency(prev_week_PnL))
 
 
     st.markdown("---")
